@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:servicenow="http://www.mulesoft.org/schema/mule/servicenow" xmlns:batch="http://www.mulesoft.org/schema/mule/batch"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:os="http://www.mulesoft.org/schema/mule/os" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd
+http://www.mulesoft.org/schema/mule/servicenow http://www.mulesoft.org/schema/mule/servicenow/current/mule-servicenow.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="f56d2bc5-32b7-4ffd-a2d5-774e702ed898">
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<salesforce:sfdc-config name="Salesforce_Config" doc:name="Salesforce Config" doc:id="c5b7c90a-a0cb-4a54-a03f-67a5829530d0" >
+		<salesforce:cached-basic-connection username="loay_abdelrahim@yahoo.com" password="loayAbd999" securityToken="UhG25hDUKbHEhabw1oVxK5g2Y"/>
+	</salesforce:sfdc-config>
+	<servicenow:config name="ServiceNow_Config" doc:name="ServiceNow Config" doc:id="4e2963b7-3ce3-4e59-ac00-d837cd4d5686" >
+		<servicenow:basic-connection username="admin" password="mZnRUy1Rum3M" serviceAddress="https://dev91226.service-now.com/">
+			<servicenow:transport >
+				<servicenow:basic-auth-http-message-dispatcher-provider username="admin" password="mZnRUy1Rum3M" />
+			</servicenow:transport>
+		</servicenow:basic-connection>
+	</servicenow:config>
+	<flow name="snow2sfdcMigrationFlow" doc:id="52c53441-c472-486c-aec4-8cbf73d528a3" >
+		<http:listener doc:name="Start Migration" doc:id="8f4f6d12-9723-4708-aac2-d9c80b62e28d" config-ref="HTTP_Listener_config" path="/migrate" doc:description="This is an HTTP listener that triggers the migration flow when HTTP request is received." allowedMethods="GET"/>
+		<set-variable value="#[attributes.queryParams.callerId default '']" doc:name="Set Query Variable" doc:id="bd507544-afe0-4c79-8d7a-b245b4852dae" variableName="callerIdVar" />
+		<choice doc:name="Choice" doc:id="79230450-1eb5-4f4c-8092-146860e79aaf" >
+			<when expression="#[vars.callerIdVar != '']">
+				<flow-ref doc:name="Flow Reference" doc:id="708b87dc-406c-4666-b9bf-8975f13807ac" name="snow2sfdcFlow"/>
+			</when>
+			<otherwise>
+				<logger level="INFO" doc:name="Request Parameter Missing" doc:id="4b9e1824-bf42-4adc-b70e-38d4be5cf275" message="Caller Id Request Parameter Has To Be Provided" />
+			</otherwise>
+		</choice>
+		<ee:transform doc:name="Response" doc:id="f524454d-eafa-44a7-ad1c-2339e8d90a93" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="snow2sfdcFlow" doc:id="ff9bb202-d6b7-46d0-88ba-68ace18bde95" >
+		<ee:transform doc:name="Prepare Get Records With CallerIdVar" doc:id="8305a936-728a-44c2-9e0f-1e8214d3c937" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/xml
+ns ns0 http://www.service-now.com/incident
+---
+{
+	ns0#getRecords: {
+		ns0#caller_id: vars.callerIdVar
+	}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<servicenow:invoke service="incident" operation="getRecords" doc:name="Get Incidents From ServiceNow" doc:id="b06bc8dd-5fe8-4f41-86be-4b255900cf02" config-ref="ServiceNow_Config"/>
+		<ee:transform doc:name="Transform Response" doc:id="f3fbadb0-b662-4406-8e05-05ff16ac2e5f" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+payload.body.getRecordsResponse.*getRecordsResult]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<batch:job jobName="snow2sfdcBatchJob" doc:id="476b76db-0b55-42a2-ab05-58e8c4e507ce" >
+			<batch:process-records >
+				<batch:step name="GetSalesforceCaseBatchStep" doc:id="486bdb61-d3f6-4ac6-8c30-4f6d500e5b3d" >
+					<ee:transform doc:name="Prepare Salesforce Case" doc:id="18c86b18-ef6e-4681-9a91-c7fecded0349" >
+						<ee:message >
+							<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+{
+	Origin: payload.contact_type,
+	Description: payload.description,
+	Subject: 'ServiceNow_Incident_' ++ payload.number,
+	Status: payload.state match {
+		case "1" -> "New"
+		case "2" -> "In Progress"
+		case "3" -> "On Hold"
+		case "4" -> "Resolved"
+		case "5" -> "Closed"
+		case "6" -> "Canceled"
+	},
+	Reason: payload.subcategory,
+	Priority: payload.urgency match {
+		case "1" -> "High"
+		case "2" -> "Medium"
+		case "3" -> "Low"
+	}
+}]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
+					<salesforce:query doc:name="Query Case" doc:id="2a9670e7-678f-4cd2-a32f-f5009510ac29" config-ref="Salesforce_Config" target="CaseInSFDC" targetValue="#[payload[0]]">
+						<salesforce:salesforce-query >SELECT Id FROM Case WHERE Subject = ':subject'</salesforce:salesforce-query>
+						<salesforce:parameters ><![CDATA[#[output application/java
+---
+{
+	subject : payload.Subject
+}]]]></salesforce:parameters>
+					</salesforce:query>
+					<ee:transform doc:name="Add Id To Payload" doc:id="9eed58f9-30de-4e44-841a-adb35f7d173d" >
+						<ee:message >
+							<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+payload ++ {(Id : vars.CaseInSFDC.Id) if vars.CaseInSFDC.Id != null}]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
+				</batch:step>
+				<batch:step name="UpsertCaseBatchStep" doc:id="0941709e-a5e9-42bc-bda1-3ffd840be2bc" >
+					<batch:aggregator doc:name="Batch Aggregator" doc:id="af29c590-556a-47fc-9011-24a8d1193dad" size="100">
+						<ee:transform doc:name="Map Payload" doc:id="f3a560bd-15c7-44e0-9a3d-741f346e9a58" >
+							<ee:message >
+								<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+payload map {
+	Id: $.Id,
+	Type: $.Type,
+	Status: $.Status,
+	Reason: $.Reason,
+	Origin: $.Origin,
+	Subject: $.Subject,
+	Priority: $.Priority,
+	Description: $.Description
+}]]></ee:set-payload>
+							</ee:message>
+						</ee:transform>
+						<salesforce:upsert type="Case" doc:name="Upsert Cases" doc:id="0a757f78-5924-4632-b0b0-d14deb122240" config-ref="Salesforce_Config" externalIdFieldName="Id"/>
+					</batch:aggregator>
+				</batch:step>
+			</batch:process-records>
+			<batch:on-complete >
+				<logger level="INFO" doc:name="Migration Finished" doc:id="fbfdddfe-806a-4c26-961d-6e8a1dab1a1d" message="Incident To Case Migration Batch Job Completed" />
+			</batch:on-complete>
+		</batch:job>
+	</flow>
+</mule>
