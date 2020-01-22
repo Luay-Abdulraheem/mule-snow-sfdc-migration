@@ -10,18 +10,19 @@ http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mu
 http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd
 http://www.mulesoft.org/schema/mule/servicenow http://www.mulesoft.org/schema/mule/servicenow/current/mule-servicenow.xsd">
 	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="f56d2bc5-32b7-4ffd-a2d5-774e702ed898">
-		<http:listener-connection host="0.0.0.0" port="8081" />
+		<http:listener-connection host="0.0.0.0" port="${http.port}" />
 	</http:listener-config>
 	<salesforce:sfdc-config name="Salesforce_Config" doc:name="Salesforce Config" doc:id="c5b7c90a-a0cb-4a54-a03f-67a5829530d0" >
-		<salesforce:cached-basic-connection username="loay_abdelrahim@yahoo.com" password="loayAbd999" securityToken="UhG25hDUKbHEhabw1oVxK5g2Y"/>
+		<salesforce:cached-basic-connection username="${sfdc.username}" password="${sfdc.password}" securityToken="${sfdc.securityToken}" url="${sfdc.endpoint}"/>
 	</salesforce:sfdc-config>
 	<servicenow:config name="ServiceNow_Config" doc:name="ServiceNow Config" doc:id="4e2963b7-3ce3-4e59-ac00-d837cd4d5686" >
-		<servicenow:basic-connection username="admin" password="mZnRUy1Rum3M" serviceAddress="https://dev91226.service-now.com/">
+		<servicenow:basic-connection username="${snow.username}" password="${snow.password}" serviceAddress="${snow.endpoint}">
 			<servicenow:transport >
-				<servicenow:basic-auth-http-message-dispatcher-provider username="admin" password="mZnRUy1Rum3M" />
+				<servicenow:basic-auth-http-message-dispatcher-provider username="${snow.username}" password="${snow.password}" />
 			</servicenow:transport>
 		</servicenow:basic-connection>
 	</servicenow:config>
+	<configuration-properties doc:name="Configuration properties" doc:id="f2f146e6-e1c1-4048-b310-fd6f52e1eb7d" file="mule-artifact.properties" />
 	<flow name="snow2sfdcMigrationFlow" doc:id="52c53441-c472-486c-aec4-8cbf73d528a3" >
 		<http:listener doc:name="Start Migration" doc:id="8f4f6d12-9723-4708-aac2-d9c80b62e28d" config-ref="HTTP_Listener_config" path="/migrate" doc:description="This is an HTTP listener that triggers the migration flow when HTTP request is received." allowedMethods="GET"/>
 		<set-variable value="#[attributes.queryParams.callerId default '']" doc:name="Set Query Variable" doc:id="bd507544-afe0-4c79-8d7a-b245b4852dae" variableName="callerIdVar" />
