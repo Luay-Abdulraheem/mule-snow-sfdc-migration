@@ -39,7 +39,13 @@ http://www.mulesoft.org/schema/mule/servicenow http://www.mulesoft.org/schema/mu
 				<ee:set-payload ><![CDATA[%dw 2.0
 output application/json
 ---
-payload]]></ee:set-payload>
+ {
+ 	Message: "Migration Process Report for Caller Id: " ++ vars.callerIdVar,
+ 	CreationTime: payload.creationTime as DateTime,
+ 	TotalRecords: payload.result.totalRecords,
+ 	LoadedRecords: payload.result.loadedRecords,
+ 	FailedRecords: payload.result.failedRecords 
+ }]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
 	</flow>
