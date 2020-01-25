@@ -19,7 +19,7 @@ Finally, during the On Complete stage, the results of the batch execution will b
 
 # Considerations <a name="considerations"/>
 
-1. **Migrated Cases in SalesForce:** For now, the migrated cases Subject field will be set as 'SFDC_MIGRATION_' + ServiceNow Incident Number. This will be used to check if the incident has been migrated to Salesforce or not. Make sure that the migrated case Subject field does not change after migration, or the incident will be migrated again.  
+**Important note about migrated Cases in SalesForce:** For now, the migrated cases Subject field will be set as 'SFDC_MIGRATION_' + ServiceNow Incident Number. This will be used to check if the incident has been migrated to Salesforce or not. Make sure that the migrated case Subject field does not change after migration, or the incident will be migrated again.  
 
 ## Salesforce Considerations <a name="salesforceconsiderations"/>
 
@@ -49,11 +49,11 @@ In order to use this Mule template you need to configure properties either in pr
 
 **********************************************************************
 * Application plugins:                                              
-  - File Common Plugin : 1.2.0                              
-  - ObjectStore : 1.1.3                                             
-  - ServiceNow : 6.4.0                                              
-  - Sockets : 1.1.5                                                 
-  - File : 1.2.0                                                    
-  - HTTP : 1.5.11                                                   
-  - Salesforce : 9.7.10                                             
+ - File Common Plugin : 1.2.0                              
+ - ObjectStore : 1.1.3                                             
+ - ServiceNow : 6.4.0                                              
+ - Sockets : 1.1.5                                                 
+ - File : 1.2.0                                                    
+ - HTTP : 1.5.11                                                   
+ - Salesforce : 9.7.10                                             
 **********************************************************************
