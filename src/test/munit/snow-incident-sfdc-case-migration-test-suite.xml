@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd">
+	<munit:config name="snow-incident-sfdc-case-migration-test-suite.xml" />
+	<munit:test name="snow-incident-sfdc-case-migration-test-suite-snow2sfdcMigrationFlowTest" doc:id="d8811f1c-928b-4f92-8ce7-4c7507453d38" description="Test">
+		<munit:behavior >
+			<munit:set-event doc:name="Set Event: Request Parameter" doc:id="90d9d765-1067-4560-b530-25a41034b1de">
+				<munit:attributes value="#[{queryParams: {'callerId':'luay.abdulraheem'}}]" />
+			</munit:set-event>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to snow2sfdcMigrationFlow" doc:id="fcd08337-1daf-42f9-af8d-dde440ed8011" name="snow2sfdcMigrationFlow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that: Variable" doc:id="125e75c3-2ffe-4b01-b35d-788bbd38d4c3" is="#[MunitTools::both(MunitTools::notNullValue(), MunitTools::equalTo('luay.abdulraheem'))]" expression="#[vars.callerIdVar]"/>
+			<munit-tools:verify-call doc:name="Verify call: Starting Migration" doc:id="85e99336-4609-45df-85b1-22bdbdb42615" processor="ee:transform">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Prepare Get Records With CallerIdVar" attributeName="doc:name" />
+					<munit-tools:with-attribute whereValue="8305a936-728a-44c2-9e0f-1e8214d3c937" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+		</munit:validation>
+	</munit:test>
+
+
+</mule>
