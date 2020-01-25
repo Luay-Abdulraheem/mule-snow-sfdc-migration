@@ -48,6 +48,11 @@ output application/json
  }]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="53baadae-7c33-4d44-bf5f-f45a52f16bda" type="ANY">
+				<logger level="ERROR" doc:name="Logger" doc:id="c472b0d5-b779-45a8-afc6-c0f30fe124c7" message="Error occured: #[payload]"/>
+			</on-error-propagate>
+		</error-handler>
 	</flow>
 	<flow name="snow2sfdcFlow" doc:id="ff9bb202-d6b7-46d0-88ba-68ace18bde95" >
 		<ee:transform doc:name="Prepare Get Records With CallerIdVar" doc:id="8305a936-728a-44c2-9e0f-1e8214d3c937" >
@@ -72,7 +77,7 @@ output application/java
 payload.body.getRecordsResponse.*getRecordsResult]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-		<batch:job jobName="snow2sfdcBatchJob" doc:id="476b76db-0b55-42a2-ab05-58e8c4e507ce" >
+		<batch:job jobName="snow2sfdcBatchJob" doc:id="476b76db-0b55-42a2-ab05-58e8c4e507ce" maxFailedRecords="50">
 			<batch:process-records >
 				<batch:step name="GetSalesforceCaseBatchStep" doc:id="486bdb61-d3f6-4ac6-8c30-4f6d500e5b3d" >
 					<ee:transform doc:name="Prepare Salesforce Case" doc:id="18c86b18-ef6e-4681-9a91-c7fecded0349" >
@@ -139,6 +144,9 @@ payload map {
 						</ee:transform>
 						<salesforce:upsert type="Case" doc:name="Upsert Cases" doc:id="0a757f78-5924-4632-b0b0-d14deb122240" config-ref="Salesforce_Config" externalIdFieldName="Id"/>
 					</batch:aggregator>
+				</batch:step>
+				<batch:step name="Failures" doc:id="9bf1b650-c97c-4d2d-8279-b2fc59a00400" acceptPolicy="ONLY_FAILURES">
+					<logger level="INFO" doc:name="Failure Logger" doc:id="28bdf22e-f8aa-4eb6-9c04-9040dab72acb" message="Error Record: #[payload]"/>
 				</batch:step>
 			</batch:process-records>
 			<batch:on-complete >
