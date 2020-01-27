@@ -4,7 +4,7 @@
 <!-- Header (start) -->
 
 <!-- Header (end) -->
-Moves a large set of Incidents from ServiceNow to Salesforce. Trigger with an HTTP call either manually or programmatically. Incidents are upserted so that the migration can be run multiple times without creating duplicate records. This template uses batch to efficiently process many records at a time.
+Moves a large set of Incidents from ServiceNow to Salesforce. Trigger with an HTTP call either manually or programmatically. Incidents are upserted so that the migration can be run multiple times without creating duplicate records. This template uses batch to efficiently process many records at a time. You can find this template at: https://github.com/Luay-Abdulraheem/mule-snow-sfdc-migration
 
 # Use Case
 <!-- Use Case (start) -->
@@ -49,11 +49,11 @@ In order to use this Mule template you need to configure properties either in pr
 
 **********************************************************************
 * Application plugins:                                              
- - File Common Plugin : 1.2.0                              
- - ObjectStore : 1.1.3                                             
- - ServiceNow : 6.4.0                                              
- - Sockets : 1.1.5                                                 
- - File : 1.2.0                                                    
- - HTTP : 1.5.11                                                   
- - Salesforce : 9.7.10                                             
+  - File Common Plugin : 1.2.0                              
+  - ObjectStore : 1.1.3                                             
+  - ServiceNow : 6.4.0                                              
+  - Sockets : 1.1.5                                                 
+  - File : 1.2.0                                                    
+  - HTTP : 1.5.11                                                   
+  - Salesforce : 9.7.10                                             
 **********************************************************************
