@@ -10,7 +10,7 @@ Moves a large set of Incidents from ServiceNow to Salesforce. Trigger with an HT
 <!-- Use Case (start) -->
 **As a ServiceNow admin I want to migrate incidents to Salesforce**
 
-This example should serve as a foundation for the process of migrating Incidents from a Workday instance to Salesforce. 
+This example should serve as a foundation for the process of migrating Incidents from a ServiceNow instance to Salesforce. 
 
 As implemented, this example leverages the [Batch Module](http://www.mulesoft.org/documentation/display/current/Batch+Processing).
 Firstly will query the ServiceNow for all the existing Incidents that match the filtering criteria sent as a request parameter. The criteria is based on ServiceNow Incidents caller Id.
@@ -25,7 +25,7 @@ Finally, during the On Complete stage, the results of the batch execution will b
 
 In order to have this example working as expected, you should be aware of your own Salesforce field configuration.
 
-## ServiceNow Considerations <a name="workdayconsiderations"/>
+## ServiceNow Considerations <a name="servicenowconsiderations"/>
 
 In order to have this example working as expected, you should be aware of your own ServiceNow field configuration.
 
