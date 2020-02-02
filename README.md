@@ -13,13 +13,13 @@ Moves a large set of Incidents from ServiceNow to Salesforce. Trigger with an HT
 This example should serve as a foundation for the process of migrating Incidents from a Workday instance to Salesforce. 
 
 As implemented, this example leverages the [Batch Module](http://www.mulesoft.org/documentation/display/current/Batch+Processing).
-Firstly will query the Workday for all the existing incidents that match the filtering criteria sent as a request parameter. The criteria is based on manipulations based on ServiceNow Incidents caller Id.
-The last step of the Process stage will group the incidents and create them in Salesforce.
-Finally, during the On Complete stage, the results of the batch execution will be presented with some initiate statistics data and an SMS with the summary report.
+Firstly will query the ServiceNow for all the existing Incidents that match the filtering criteria sent as a request parameter. The criteria is based on ServiceNow Incidents caller Id.
+The last step of the Process stage will group the Incidents and create them in Salesforce.
+Finally, during the On Complete stage, the results of the batch execution will be presented with some initiate statistics data and an SMS with the summary report will be sent.
 
 # Considerations <a name="considerations"/>
 
-**Important note about migrated Cases in SalesForce:** For now, the migrated cases Subject field will be set as 'SFDC_MIGRATION_' + ServiceNow Incident Number. This will be used to check if the incident has been migrated to Salesforce or not. Make sure that the migrated case Subject field does not change after migration, or the incident will be migrated again.  
+**Important note about migrated Cases in SalesForce:** For now, the migrated Cases Subject field will be set as 'SFDC_MIGRATION_' + ServiceNow Incident Number. This will be used to check if the incident has been migrated to Salesforce or not. Make sure that the migrated case Subject field does not change after migration, or the incident will be migrated again.  
 
 ## Salesforce Considerations <a name="salesforceconsiderations"/>
 
