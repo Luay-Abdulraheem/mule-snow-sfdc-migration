@@ -1,14 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:servicenow="http://www.mulesoft.org/schema/mule/servicenow" xmlns:batch="http://www.mulesoft.org/schema/mule/batch"
-	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
-	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:os="http://www.mulesoft.org/schema/mule/os" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+<mule xmlns:twilio-connector="http://www.mulesoft.org/schema/mule/twilio-connector" xmlns:servicenow="http://www.mulesoft.org/schema/mule/servicenow"
+	xmlns:batch="http://www.mulesoft.org/schema/mule/batch"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:os="http://www.mulesoft.org/schema/mule/os" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
 http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
 http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
 http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd
-http://www.mulesoft.org/schema/mule/servicenow http://www.mulesoft.org/schema/mule/servicenow/current/mule-servicenow.xsd">
+http://www.mulesoft.org/schema/mule/servicenow http://www.mulesoft.org/schema/mule/servicenow/current/mule-servicenow.xsd
+http://www.mulesoft.org/schema/mule/twilio-connector http://www.mulesoft.org/schema/mule/twilio-connector/current/mule-twilio-connector.xsd">
 	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="f56d2bc5-32b7-4ffd-a2d5-774e702ed898">
 		<http:listener-connection host="0.0.0.0" port="${http.port}" />
 	</http:listener-config>
@@ -23,31 +24,42 @@ http://www.mulesoft.org/schema/mule/servicenow http://www.mulesoft.org/schema/mu
 		</servicenow:basic-connection>
 	</servicenow:config>
 	<configuration-properties doc:name="Configuration properties" doc:id="f2f146e6-e1c1-4048-b310-fd6f52e1eb7d" file="mule-artifact.properties" />
+	<twilio-connector:config name="Twilio_Connector_Config" doc:name="Twilio Connector Config" doc:id="15835d20-5da9-4023-9c88-ac1452b4e43b" property_username="${twilio.accountSid}" property_password="${twilio.authToken}" property_host="${twilio.host}" property_port="${twilio.port}" property_basePath="${twilio.basePath}" property_protocol="${twilio.protocol}">
+		<twilio-connector:connection />
+	</twilio-connector:config>
 	<flow name="snow2sfdcMigrationFlow" doc:id="52c53441-c472-486c-aec4-8cbf73d528a3" >
 		<http:listener doc:name="Start Migration" doc:id="8f4f6d12-9723-4708-aac2-d9c80b62e28d" config-ref="HTTP_Listener_config" path="/migrate" doc:description="This is an HTTP listener that triggers the migration flow when HTTP request is received." allowedMethods="GET"/>
 		<set-variable value="#[attributes.queryParams.callerId default '']" doc:name="Set Query Variable" doc:id="bd507544-afe0-4c79-8d7a-b245b4852dae" variableName="callerIdVar" />
 		<choice doc:name="Choice" doc:id="79230450-1eb5-4f4c-8092-146860e79aaf" >
 			<when expression="#[vars.callerIdVar != '']">
 				<flow-ref doc:name="Flow Reference" doc:id="708b87dc-406c-4666-b9bf-8975f13807ac" name="snow2sfdcFlow"/>
-			</when>
-			<otherwise>
-				<logger level="INFO" doc:name="Request Parameter Missing" doc:id="4b9e1824-bf42-4adc-b70e-38d4be5cf275" message="Caller Id Request Parameter Has To Be Provided" />
-			</otherwise>
-		</choice>
-		<ee:transform doc:name="Response" doc:id="f524454d-eafa-44a7-ad1c-2339e8d90a93" >
-			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
+				<ee:transform doc:name="Transform Message" doc:id="24ffc748-117c-4491-974e-62818fda2e98">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
  {
- 	Message: "Migration Process Report for Caller Id: " ++ vars.callerIdVar,
- 	CreationTime: payload.creationTime as DateTime,
- 	TotalRecords: payload.result.totalRecords,
- 	LoadedRecords: payload.result.loadedRecords,
- 	FailedRecords: payload.result.failedRecords 
+ 	Message: "Migration Process Initiated for Caller Id: " ++ vars.callerIdVar,
+ 	RecordCount: payload.result.totalRecords,
+ 	StartExecutionOn: payload.creationTime as DateTime	
  }]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
+			</when>
+			<otherwise>
+				<logger level="INFO" doc:name="Request Parameter Missing" doc:id="4b9e1824-bf42-4adc-b70e-38d4be5cf275" message="Caller Id Request Parameter Has To Be Provided" />
+				<ee:transform doc:name="Transform Message" doc:id="7debeb4d-ef1a-4db3-abb4-c349729dea63" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	Message: "Caller Id Request Parameter Has To Be Provided"
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
 		<error-handler >
 			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="53baadae-7c33-4d44-bf5f-f45a52f16bda" type="ANY">
 				<logger level="ERROR" doc:name="Logger" doc:id="c472b0d5-b779-45a8-afc6-c0f30fe124c7" message="Error occured: #[payload]"/>
@@ -74,21 +86,21 @@ ns ns0 http://www.service-now.com/incident
 				<ee:set-payload ><![CDATA[%dw 2.0
 output application/java
 ---
-payload.body.getRecordsResponse.*getRecordsResult]]></ee:set-payload>
+payload.body.getRecordsResponse.*getRecordsResult default []]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
 		<batch:job jobName="snow2sfdcBatchJob" doc:id="476b76db-0b55-42a2-ab05-58e8c4e507ce" maxFailedRecords="50">
 			<batch:process-records >
-				<batch:step name="GetSalesforceCaseBatchStep" doc:id="486bdb61-d3f6-4ac6-8c30-4f6d500e5b3d" >
+				<batch:step name="GetSalesforceCaseBatchStep" doc:id="486bdb61-d3f6-4ac6-8c30-4f6d500e5b3d" acceptExpression="">
 					<ee:transform doc:name="Prepare Salesforce Case" doc:id="18c86b18-ef6e-4681-9a91-c7fecded0349" >
 						<ee:message >
 							<ee:set-payload ><![CDATA[%dw 2.0
 output application/java
 ---
 {
-	Origin: payload.contact_type,
+	Origin: payload.contact_type default '',
 	Description: payload.description,
-	Subject: 'ServiceNow_Incident_' ++ payload.number,
+	Subject: 'ServiceNow_Incident_' ++ (payload.number default ''),
 	Status: payload.state match {
 		case "1" -> "New"
 		case "2" -> "In Progress"
@@ -96,12 +108,16 @@ output application/java
 		case "4" -> "Resolved"
 		case "5" -> "Closed"
 		case "6" -> "Canceled"
+		case "7" -> "Closed"
+		case "8" -> "Canceled"
+		else -> "No Match"
 	},
 	Reason: payload.subcategory,
 	Priority: payload.urgency match {
 		case "1" -> "High"
 		case "2" -> "Medium"
 		case "3" -> "Low"
+		else -> "No Match"
 	}
 }]]></ee:set-payload>
 						</ee:message>
@@ -150,7 +166,27 @@ payload map {
 				</batch:step>
 			</batch:process-records>
 			<batch:on-complete >
-				<logger level="INFO" doc:name="Migration Finished" doc:id="fbfdddfe-806a-4c26-961d-6e8a1dab1a1d" message="Incident To Case Migration Batch Job Completed" />
+				<scatter-gather doc:name="Scatter-Gather" doc:id="cd17dbf6-819d-457b-a9fe-cf5c0b541dbb" >
+					<route >
+						<logger level="INFO" doc:name="Migration Finished" doc:id="fbfdddfe-806a-4c26-961d-6e8a1dab1a1d" message="Incident To Case Migration Batch Job Completed" />
+					</route>
+					<route >
+						<ee:transform doc:name="Transform Message" doc:id="3088ec1a-edbc-4299-b8f6-3929843ba4a6" >
+							<ee:message >
+								<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+{
+	Body: "Migration Process Finished with TotalRecords: " ++ (payload.totalRecords default 0) ++ ", and SuccessfulRecords: " ++ (payload.successfulRecords default 0) ++ ", and FailedRecords: " ++ (payload.failedRecords default 0),
+	From: "+12029316473",
+	To: "+61410813092"
+}]]></ee:set-payload>
+							</ee:message>
+						</ee:transform>
+						<twilio-connector:send-message doc:name="Send message" doc:id="8913b4c9-3fb8-4e11-bac2-e359a614bec4" config-ref="Twilio_Connector_Config" account-sid="${twilio.accountSid}">
+						</twilio-connector:send-message>
+					</route>
+				</scatter-gather>
 			</batch:on-complete>
 		</batch:job>
 	</flow>
