@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <mule xmlns:twilio-connector="http://www.mulesoft.org/schema/mule/twilio-connector" xmlns:servicenow="http://www.mulesoft.org/schema/mule/servicenow"
 	xmlns:batch="http://www.mulesoft.org/schema/mule/batch"
 	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:os="http://www.mulesoft.org/schema/mule/os" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
@@ -91,7 +90,7 @@ payload.body.getRecordsResponse.*getRecordsResult default []]]></ee:set-payload>
 		</ee:transform>
 		<batch:job jobName="snow2sfdcBatchJob" doc:id="476b76db-0b55-42a2-ab05-58e8c4e507ce" maxFailedRecords="50">
 			<batch:process-records >
-				<batch:step name="GetSalesforceCaseBatchStep" doc:id="486bdb61-d3f6-4ac6-8c30-4f6d500e5b3d" acceptExpression="">
+				<batch:step name="GetSalesforceCaseBatchStep" doc:id="486bdb61-d3f6-4ac6-8c30-4f6d500e5b3d" >
 					<ee:transform doc:name="Prepare Salesforce Case" doc:id="18c86b18-ef6e-4681-9a91-c7fecded0349" >
 						<ee:message >
 							<ee:set-payload ><![CDATA[%dw 2.0
@@ -102,22 +101,22 @@ output application/java
 	Description: payload.description,
 	Subject: 'ServiceNow_Incident_' ++ (payload.number default ''),
 	Status: payload.state match {
-		case "1" -> "New"
-		case "2" -> "In Progress"
-		case "3" -> "On Hold"
-		case "4" -> "Resolved"
-		case "5" -> "Closed"
-		case "6" -> "Canceled"
-		case "7" -> "Closed"
-		case "8" -> "Canceled"
-		else -> "No Match"
+		case 1 -> 'New'
+		case 2 -> 'In Progress'
+		case 3 -> 'On Hold'
+		case 4 -> 'Resolved'
+		case 5 -> 'Closed'
+		case 6 -> 'Canceled'
+		case 7 -> 'Closed'
+		case 8 -> 'Canceled'
+		else -> 'No Match'
 	},
 	Reason: payload.subcategory,
 	Priority: payload.urgency match {
-		case "1" -> "High"
-		case "2" -> "Medium"
-		case "3" -> "Low"
-		else -> "No Match"
+		case 1 -> 'High'
+		case 2 -> 'Medium'
+		case 3 -> 'Low'
+		else -> 'No Match'
 	}
 }]]></ee:set-payload>
 						</ee:message>
