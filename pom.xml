@@ -2,12 +2,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>com.mycompany</groupId>
+	<groupId>2c7285e2-7ce8-4a38-a1d1-109c5e016639</groupId>
 	<artifactId>sfdc2snow</artifactId>
     <version>1.0.1</version>
     <packaging>mule-application</packaging>
 
-	<name>ServiceNow Incident to Salesforce Case Migration Example</name>
+	<name>snow-incident-sfdc-case-migration</name>
 
     <description>This example migrates ServiceNow Incidents to Salesforce Cases, based on the ServiceNow Incidents Caller Id.</description>
     <properties>
